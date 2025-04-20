@@ -1,0 +1,129 @@
+C51 COMPILER V9.54   ULTRASONIC                                                            04/20/2025 16:21:03 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE ULTRASONIC
+OBJECT MODULE PLACED IN .\Objects\ultrasonic.obj
+COMPILER INVOKED BY: D:\Keil\C51\BIN\C51.EXE ultrasonic.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\u
+                    -ltrasonic.lst) OBJECT(.\Objects\ultrasonic.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "delay.h"
+   3          sbit Trig=P1^6;//定义超声波模块引脚
+   4          sbit Echo=P1^5;
+   5          
+   6          void T1_Init()  // 定时计数器1初始化 
+   7          {
+   8   1          TMOD &= 0x0F; // 清除高四位（定时器1的设置位）
+   9   1          TMOD |= 0x10; // 设置定时器1为模式1（16位定时）
+  10   1          TH1 = 0;      // 高 8 位初值
+  11   1          TL1 = 0;      // 低 8 位初值
+  12   1          ET1 = 1;      // 允许定时器1中断
+  13   1          EA  = 1;      // 开总中断
+  14   1      }
+  15          
+  16                  
+  17          void UT_Init()  //超声波模块初始化
+  18          {
+  19   1          Echo=0;
+  20   1          Trig=0;
+  21   1          T1_Init();
+  22   1      }
+  23          
+  24          /**
+  25            *@beaf 超声波模块触发函数
+  26            *@param 无
+  27            *@retval 无
+  28          */
+  29          void UT_triggr()
+  30          {
+  31   1          Trig=1;
+  32   1          Delay10us(2);
+  33   1          Trig=0;    
+  34   1      }
+  35          /**
+  36            *@beaf超声波测距
+  37            *@param 无
+  38            *@retval distance 测试的距离
+  39          */
+  40          unsigned int measure()
+  41          {
+  42   1          unsigned int a,distance;
+  43   1          while(Echo==0);
+  44   1              TR1=1;
+  45   1          while(Echo);
+  46   1              TR1=0;
+  47   1          a=TH0*256+TL0;
+  48   1             TH1=0;
+  49   1             TL1=0;
+  50   1          distance= a*1.7/100;
+  51   1          return distance;        
+  52   1      }
+  53          
+  54          void avoid()
+C51 COMPILER V9.54   ULTRASONIC                                                            04/20/2025 16:21:03 PAGE 2   
+
+  55          {
+  56   1              unsigned int left_dist,right_dist,distance;
+  57   1              distance = measure();
+  58   1              while(1)
+  59   1              {
+  60   2                      if(distance < 20)  // 障碍物距离小于 20cm
+  61   2                      {
+  62   3                              stop();
+*** WARNING C206 IN LINE 62 OF ultrasonic.c: 'stop': missing function-prototype
+  63   3                              delay_ms(300);
+  64   3                              // 检查左边
+  65   3                              turnleft(); // 临时转向左边测距
+*** WARNING C206 IN LINE 65 OF ultrasonic.c: 'turnleft': missing function-prototype
+  66   3                              delay_ms(500); // 模拟探测方向调整时间
+  67   3                              distance = measure();
+  68   3                              left_dist = distance;
+  69   3                  // 再测右边
+  70   3                  turnright();
+*** WARNING C206 IN LINE 70 OF ultrasonic.c: 'turnright': missing function-prototype
+  71   3                  delay_ms(1000); // 模拟探测方向调整
+  72   3                  distance = measure();
+  73   3                  right_dist = distance;
+  74   3                  // 回正方向
+  75   3                              turnleft();
+  76   3                              delay_ms(500);
+  77   3                  retreat();
+*** WARNING C206 IN LINE 77 OF ultrasonic.c: 'retreat': missing function-prototype
+  78   3                  delay_ms(200);
+  79   3                  // 判断左右哪个更远，往远的方向转
+  80   3                  if(left_dist > right_dist)
+  81   3                  {
+  82   4                      turnleft();
+  83   4                      delay_ms(500);
+  84   4                  }
+  85   3                  else
+  86   3                  {
+  87   4                      turnright();
+  88   4                      delay_ms(500);
+  89   4                  }
+  90   3                      }
+  91   2              else
+  92   2              {
+  93   3                  straight();
+*** WARNING C206 IN LINE 93 OF ultrasonic.c: 'straight': missing function-prototype
+  94   3              }
+  95   2      
+  96   2              delay_ms(100);
+  97   2              }
+  98   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    228    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  5 WARNING(S),  0 ERROR(S)

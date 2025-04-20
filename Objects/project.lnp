@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\motor.obj",
+".\Objects\delay.obj",
+".\Objects\trace.obj",
+".\Objects\ultrasonic.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 
